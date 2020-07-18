@@ -3,6 +3,7 @@ set -e
 
 useradd distcc
 echo -e "toor\ntoor" | passwd
+#systemctl start dhcpcd.service 
 
 # our target platform
 
