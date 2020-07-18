@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+useradd distuser
+echo -e "toor\ntoor" | passwd
+
 # our target platform
 _target=aarch64-linux-gnu
 
@@ -16,7 +19,7 @@ pacman -S --noconfirm --quiet --needed --asdeps gperf git jshon expac > /dev/nul
 mkdir /tmp/packer 
 cd /tmp/packer
 curl -R -L -O https://aur.archlinux.org/packages/pa/packer/PKGBUILD
-makepkg --asroot -s -i --noconfirm
+runuser distuser -c 'makepkg -s -i --noconfirm'
 cd / && rm -rf /tmp/packer
 
 # install the basic, non-conflicting stuff
@@ -37,7 +40,7 @@ rm -rf /tmp/packer*
 # build gcc stage2 and remove gcc stage 1
 cd /tmp && packer -G ${_target}-gcc-stage2
 cd ${_target}-gcc-stage2
-makepkg --asroot -s
+runuser distuser -c 'makepkg -si'
 pacman -Rdd --noconfirm ${_target}-gcc-stage1
 pacman -U --noconfirm ${_target}-gcc-stage2*.pkg.tar*
 cd / && rm -rf /tmp/${_target}-gcc-stage2
@@ -45,7 +48,7 @@ cd / && rm -rf /tmp/${_target}-gcc-stage2
 # build eglibc and remove eglibc-headers
 cd /tmp && packer -G ${_target}-eglibc
 cd ${_target}-eglibc
-makepkg --asroot -s --noconfirm
+makepkg  -si --noconfirm
 pacman -Rdd --noconfirm ${_target}-eglibc-headers
 pacman -U --noconfirm ${_target}-eglibc*.pkg.tar*
 cd / && rm -rf /tmp/${_target}-eglibc
@@ -53,7 +56,7 @@ cd / && rm -rf /tmp/${_target}-eglibc
 # build gcc and remove gcc-stage2
 cd /tmp && packer -G ${_target}-gcc
 cd ${_target}-gcc
-makepkg --asroot 
+runuser distuser -c 'makepkg  '
 pacman -Rdd --noconfirm ${_target}-gcc-stage2
 pacman -U --noconfirm ${_target}-gcc*.pkg.tar*
 cd / && rm -rf /tmp/${_target}-gcc
@@ -69,7 +72,7 @@ done
 # cleanup tmp
 rm -rf /tmp/*
 
-pacman -Ru --noconfirm packer
-pacman -R --noconfirm $(pacman -Qdtq)
+#pacman -Ru --noconfirm packer
+#pacman -R --noconfirm $(pacman -Qdtq)
 paccache -rk0
 pacman -Scc --noconfirm
