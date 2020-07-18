@@ -5,7 +5,7 @@ set -e
 _target=aarch64-linux-gnu
 
 # docker 0.11.1 borks /dev/fd
-ln -sf /proc/self/fd /dev/fd
+#ln -sf /proc/self/fd /dev/fd
 ln -sf /dev/null /dev/stdin
 
 pacman -Syy
